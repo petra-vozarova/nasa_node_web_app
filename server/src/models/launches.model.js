@@ -1,30 +1,9 @@
 const axios = require('axios');
-
 const launchesDB = require('./launches.mongo');
 const planets = require('./planets.mongo');
 
-//to make api stateless both below needs to be strored in DB externally
-//stateless - all clusters to be able to handle all requests and get exactly the same behaviour, using the same state
-//state is outside of the api's memory
-//const launches = new Map();
-
-//let latestFlightNumber = 100;
 const DEFAULT_FLIGHT_NUMBER = 100;
 
-//no longer needed as data comming from spaceX api
-// const launch = {
-//     flightNumber: 100, //flight_number
-//     mission: 'Kepler Exploration X', //name
-//     rocket: 'Explorer IS1', //rocket.name
-//     launchDate: new Date('December 27, 2030'), //date_local
-//     target: 'Kepler-442 b', //not applicable
-//     customers: ['ZTM', 'NASA'], //payload.customers for each payload
-//     upcoming: true, //upcomming
-//     success: true, //success
-// };
-//saveLaunch(launch);
-
-//launches.set(launch.flightNumber, launch);
 const SPACEX_API_URL = 'https://api.spacexdata.com/v4/launches/query';
 
 async function populateLaunches(){
@@ -68,12 +47,7 @@ async function populateLaunches(){
             success: launchDoc['success'],
             customers: customers,
         }
-        //paginating = splitting large data into easier managable pieces - pages, that are faster load 
-        //set 'page' number and 'limit' of items per page in 'options' for pginated data
-        //or pagination to false to get all items
-        
         console.log(`${launch.flightNumber} ${launch.mission}`);
-    
         await saveLaunch(launch);
     }
 }
@@ -97,12 +71,9 @@ async function findLaunch(filter){
 }
 
 async function getAllLaunches(skip, limit){
-    //return Array.from(launches.values());
     return await launchesDB
     .find({}, {'_id': 0, '__v': 0})
-    //to get data back in order (1 for ascending -1 for descending)
     .sort({flightNumber: 1})
-    //how many items to be returned and how many skipped
     .skip(skip)
     .limit(limit);
 }
@@ -121,11 +92,6 @@ async function scheduleNewLaunch(launch){
     });
 
     if(!planet){
-        //lower layer, not in the controller, so no access
-        //to req and res to use to send an error
-        //return undef object/null or throw error
-        //new keyword necessary as we are creating new instances
-        //of an error object
         throw new Error('No matching planet was found');
     }
     const newFlightNumber = await getLatestFlightNumber() + 1;
@@ -138,19 +104,6 @@ async function scheduleNewLaunch(launch){
 
     await saveLaunch(newLaunch);
 }
-
-// function addNewLaunch(launch){
-//     latestFlightNumber++;
-//     launches.set(
-//         latestFlightNumber,
-//         Object.assign(launch, {
-//             flightNumber: latestFlightNumber,
-//             success: true,
-//             upcoming: true,
-//             customer: ['Zero To Mastery', 'NASA'],
-//         })
-//     );
-// }
 
 async function existsLaunchId(id){
     return await findLaunch({
@@ -178,10 +131,6 @@ async function abortLaunchId(id){
         success: false,
     })
        return aborted.modifiedCount === 1;
-    // const aborted = launches.get(id);
-    // aborted.success = false;
-    // aborted.upcoming = false;
-    //return aborted
 }
 
 module.exports = {
