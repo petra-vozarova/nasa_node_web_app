@@ -25,9 +25,7 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm install
-        working-directory: ./NASA_project
       - run: npm run build --prefix client
-        working-directory: ./NASA_project
       - run: npm test --prefix server
-        working-directory: ./NASA_project
+
 
